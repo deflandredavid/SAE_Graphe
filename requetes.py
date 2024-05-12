@@ -1,98 +1,116 @@
-
-
+import networkx as nx
+import matplotlib.pyplot as plt
 import json
 
-films = []
+#Q1
+def json_vers_nx(chemin):
+    films = []
+    with open(chemin, 'r') as f:
+        # Lire chaque ligne du fichier
+        for line in f:
+            # Analyser la ligne en tant qu'objet JSON
+            data = json.loads(line)
 
-with open('dataSimplifiee.txt', 'r') as f:
-    # Lire chaque ligne du fichier
-    for line in f:
-        # Analyser la ligne en tant qu'objet JSON
-        data = json.loads(line)
+            cleaned_data = {}
 
-        cleaned_data = {}
+            # Nettoyer les valeurs du dictionnaire
+            for key, value in data.items():
+                if key == 'cast':  # Si la clé est 'cast'
+                    # Nettoyer les noms des acteurs
+                    cleaned_value = [actor.strip('"').replace('[[', '').replace(']]', '') for actor in value]
+                elif isinstance(value, list):
+                    # Si la valeur est une liste, nettoyer chaque élément de la liste
+                    cleaned_value = [item.strip('"').replace('[[', '').replace(']]', '') if isinstance(item, str) else item for item in value]
+                elif isinstance(value, str):
+                    # Si la valeur est une chaîne de caractères, nettoyer simplement la valeur
+                    cleaned_value = value.strip('"').replace('[[', '').replace(']]', '')
+                else:
+                    # Sinon, laisser la valeur telle quelle
+                    cleaned_value = value
+                cleaned_data[key.strip('"')] = cleaned_value
 
-        # Nettoyer les valeurs du dictionnaire
-        for key, value in data.items():
-            if key == 'cast':  # Si la clé est 'cast'
-                # Nettoyer les noms des acteurs
-                cleaned_value = [actor.strip('"').replace('[[', '').replace(']]', '') for actor in value]
-            elif isinstance(value, list):
-                # Si la valeur est une liste, nettoyer chaque élément de la liste
-                cleaned_value = [item.strip('"').replace('[[', '').replace(']]', '') if isinstance(item, str) else item for item in value]
-            elif isinstance(value, str):
-                # Si la valeur est une chaîne de caractères, nettoyer simplement la valeur
-                cleaned_value = value.strip('"').replace('[[', '').replace(']]', '')
-            else:
-                # Sinon, laisser la valeur telle quelle
-                cleaned_value = value
-            cleaned_data[key.strip('"')] = cleaned_value
+            films.append(cleaned_data)
 
-        films.append(cleaned_data)
-
-# Vérification : Afficher le résultat pour voir si les acteurs ont été ajoutés correctement
-# for film in films:
-#      print(film['title'], ":", film['cast'])
-
-def dicoActeur(acteur):
-    dictActeurs = dict()
-    listeActeur = set()
-    #renvoi liste acteurs
+    G = nx.Graph()
+    # Vérification : Afficher le résultat pour voir si les acteurs ont été ajoutés correctement
     for film in films:
-        for (cle,valeur) in film.items():
-            if(cle == "cast"):
-                if acteur in valeur:
-                    valeur.remove(acteur)
-                    for val in valeur:
-                        listeActeur.add(val)
-    dictActeurs[acteur]=listeActeur
-    return dictActeurs
+        act1 = film["cast"][0]
+        for acteur in film['cast']:
+            if acteur != act1:
+                G.add_edge(act1,acteur)
+    return G
+#json_vers_nx('dataSimplifiee.txt')
 
-#print(dicoActeur('Mohanlal'))
+G = json_vers_nx('dataSimplifiee.txt')
 
 
+#Q2 
+def collabCommuns(G,acteur1, acteur2):
+    collab1 = list(G.neighbors(acteur1))
+    collab2 = list(G.neighbors(acteur2))
+    return collab1 + collab2
+#print(collabCommuns(G,'Mohanlal','Salim Kumar'))
+
+#Q3
+def collaborateurs_proches(G,u,k):
+    """Fonction renvoyant l'ensemble des acteurs à distance au plus k de l'acteur u dans le graphe G. La fonction renvoie None si u est absent du graphe.
     
-def collabCommuns(acteur1, acteur2):
-    lesActeurs = set()
-    for film in films:
-        for (cle,valeur) in film.items():
-            if(cle == "cast"):
-                if acteur1 in valeur or acteur2 in valeur:
-                    for val in valeur:
-                        lesActeurs.add(val)
-    return lesActeurs
+    Parametres:
+        G: le graphe
+        u: le sommet de départ
+        k: la distance depuis u
+    """
+    if u not in G.nodes:
+        print(u,"est un illustre inconnu")
+        return None
+    collaborateurs = set()
+    collaborateurs.add(u)
+    print(collaborateurs)
+    for i in range(k):
+        collaborateurs_directs = set()
+        for c in collaborateurs:
+            for voisin in G.adj[c]:
+                if voisin not in collaborateurs:
+                    collaborateurs_directs.add(voisin)
+        collaborateurs = collaborateurs.union(collaborateurs_directs)
+    return collaborateurs
 
-#print(collabCommuns('Mohanlal','Salim Kumar'))
 
-def collabProch(acteur, distance):
-    acteurs_connaissant = set()  # Ensemble pour stocker les acteurs connaissant l'acteur donné
-    acteurs_visites = set()  # Ensemble pour stocker les acteurs déjà visités
-    acteurs_a_visiter = set([(acteur, 0)])  # Ensemble pour stocker les acteurs à visiter, avec leur distance
+
+
+def est_proche(G,u,k):
+    """Fonction renvoyant la distance entre l'acteur k et l'acteur u dans le graphe G. La fonction renvoie None si u est absent du graphe.
+    
+    Parametres:
+        G: le graphe
+        u: le sommet de départ
+        k: le sommet d'arrivée
+    """
+    if u not in G.nodes:
+        print(u,"est un illustre inconnu")
+        return None
+    collaborateurs = set()
+    collaborateurs.add(u)
+    print(collaborateurs)
     i = 0
+    voisin = ""
+    while k != voisin:
+        collaborateurs_directs = set()
+        for c in collaborateurs:
+            for voisin in G.adj[c]:
+                if voisin not in collaborateurs:
+                    collaborateurs_directs.add(voisin)
+            i+=1
+        collaborateurs = collaborateurs.union(collaborateurs_directs)
+    return i
+#print(collabProch(G,'Salim Kumar', 'Mohanlal'))
 
-    while i < distance:  # Itération jusqu'à la distance spécifiée
-        nouveaux_acteurs = set()  # Ensemble pour stocker les nouveaux acteurs à visiter
-        for act, d in acteurs_a_visiter:  # Pour chaque acteur à visiter
-            if act not in acteurs_visites:  # Vérifier si l'acteur n'a pas déjà été visité
-                acteurs_visites.add(act)  # Ajout de l'acteur à l'ensemble des acteurs visités
-                dico_acteur = dicoActeur(act)  # Obtenir les collaborateurs de l'acteur
-                for valeurs in dico_acteur.values():  # Pour chaque valeur dans le dictionnaire
-                    for val in valeurs:  # Pour chaque valeur dans les valeurs du dictionnaire
-                        if isinstance(val, str): 
-                            if val not in acteurs_connaissant : # Vérifier si la valeur est une chaîne de caractères (nom de l'acteur)
-                                nouveaux_acteurs.add((val, d+1))  # Ajout du nouvel acteur avec une distance incrémentée
-                                acteurs_connaissant.add((val, d+1))  # Ajout du nouvel acteur à ceux qui connaissent l'acteur donné
-        acteurs_a_visiter = nouveaux_acteurs  # Mettre à jour les acteurs à visiter avec les nouveaux acteurs découverts
-        i += 1
-        d+=1
-
-    liste_triee = sorted(list(acteurs_connaissant), key=lambda x: x[1])
-
-    return liste_triee  # Retourner la liste des acteurs connaissant l'acteur donné jusqu'à la distance spécifiée
-
-#print(collabProch('Salim Kumar',6))
-
-def centralite(acteur):
+#Q4
+def centralite(G,acteur):
     distanceMax = collabProch(acteur,20)[-1][1]
     return distanceMax
-print(centralite('Salim Kumar'))
+#print(centralite(G,'Salim Kumar'))
+
+#Q5
+def eloignement_max(G):
+    return ""
