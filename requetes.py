@@ -3,7 +3,15 @@ import matplotlib.pyplot as plt
 import json
 
 #Q1
+
 def json_vers_nx(chemin):
+    """Permet de traduire un fichier .txt issue d'un fichier .json en graphe
+    
+    Parametres:
+        chemin: le chemin du fichier
+       
+    """
+     
     films = []
     with open(chemin, 'r') as f:
         # Lire chaque ligne du fichier
@@ -42,17 +50,27 @@ def json_vers_nx(chemin):
     nx.draw(G,with_labels=True)
     plt.show()
     return G
-G = json_vers_nx('dataSimplifiee.txt')
+
 
 
 #Q2 
+
 def collabCommuns(G,acteur1, acteur2):
+    """Fonction renvoyant l'ensemble des acteurs ayant tourner avec l'acteur 1 et ceux avec l'acteur 2
+    
+    Parametres:
+        G: le graphe
+        acteur1: le premier acteur
+        acteur2: le deuxieme acteur
+    """
+     
     collab1 = list(G.neighbors(acteur1))
     collab2 = list(G.neighbors(acteur2))
     return collab1 + collab2
 #print(collabCommuns(G,'Mohanlal','Salim Kumar'))
 
 #Q3
+
 def collaborateurs_proches(G,u,k):
     """Fonction renvoyant l'ensemble des acteurs à distance au plus k de l'acteur u dans le graphe G. La fonction renvoie None si u est absent du graphe.
     
@@ -109,13 +127,26 @@ def est_proche(G,u,k):
 #Q4
 
 def centralite(G,u):
+    """Fonction renvoyant la centralité d'un acteur dans le graphe c'est à dire son degré
+    
+    Parametres:
+        G: le graphe
+        u: le sommet de départ
+    """
     if u not in G.nodes:
         print(u,"est un illustre inconnu")
         return None
     return G.degree(u)
 #print(centralite(G,'Mohanlal'))
 
+
 def centre_hollywood(G):
+    """Fonction renvoyant le centre du graphe
+    
+    Parametres:
+        G: le graphe
+        
+    """
     max = 0
     act = ""
     for acteur in G.nodes:
@@ -128,6 +159,12 @@ def centre_hollywood(G):
 
 #Q5
 def eloignement_max(G):
+    """Fonction renvoyant le couple d'acteur ayant la plus grande distance qui les sépare.
+    
+    Parametres:
+        G: le graphe
+        
+    """
     distances = dict(nx.all_pairs_shortest_path_length(G))
     max_distance = 0
     max_couple = None
@@ -140,5 +177,5 @@ def eloignement_max(G):
 
     return max_couple, max_distance
 
-print(eloignement_max(G))
+#print(eloignement_max(G))
 
