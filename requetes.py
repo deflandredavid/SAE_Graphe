@@ -5,6 +5,13 @@ import json
 #Q1
 
 def json_vers_nx(chemin):
+    """Permet de traduire un fichier .txt issue d'un fichier .json en graphe
+    
+    Parametres:
+        chemin: le chemin du fichier
+       
+    """
+     
     films = []
     with open(chemin, 'r') as f:
         # Lire chaque ligne du fichier
@@ -39,21 +46,31 @@ def json_vers_nx(chemin):
         for acteur in film['cast']:
             if acteur != act1:
                 G.add_edge(act1,acteur)
-
     plt.clf()
     nx.draw(G,with_labels=True)
     plt.show()
     return G
 
 
+
 #Q2 
+
 def collabCommuns(G,acteur1, acteur2):
+    """Fonction renvoyant l'ensemble des acteurs ayant tourner avec l'acteur 1 et ceux avec l'acteur 2
+    
+    Parametres:
+        G: le graphe
+        acteur1: le premier acteur
+        acteur2: le deuxieme acteur
+    """
+     
     collab1 = list(G.neighbors(acteur1))
     collab2 = list(G.neighbors(acteur2))
     return collab1 + collab2
 #print(collabCommuns(G,'Mohanlal','Salim Kumar'))
 
 #Q3
+
 def collaborateurs_proches(G,u,k):
     """Fonction renvoyant l'ensemble des acteurs à distance au plus k de l'acteur u dans le graphe G. La fonction renvoie None si u est absent du graphe.
     
@@ -161,12 +178,4 @@ def eloignement_max(G):
     return max_couple, max_distance
 
 #print(eloignement_max(G))
-
-
-def centralite(G,acteur):
-    distanceMax = collabProch(acteur,20)[-1][1]
-    return distanceMax
-#print(centralite(G,'Salim Kumar'))
-
-
 
