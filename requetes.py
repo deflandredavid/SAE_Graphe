@@ -2,171 +2,71 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import json
 
-#Q1
-
 def json_vers_nx(chemin):
-    films = []
+    """Convertit un fichier .json en graphe NetworkX."""
     with open(chemin, 'r') as f:
-        # Lire chaque ligne du fichier
-        for line in f:
-            # Analyser la ligne en tant qu'objet JSON
-            data = json.loads(line)
-
-            cleaned_data = {}
-
-            # Nettoyer les valeurs du dictionnaire
-            for key, value in data.items():
-                if key == 'cast':  # Si la clé est 'cast'
-                    # Nettoyer les noms des acteurs
-                    cleaned_value = [actor.strip('"').replace('[[', '').replace(']]', '') for actor in value]
-                elif isinstance(value, list):
-                    # Si la valeur est une liste, nettoyer chaque élément de la liste
-                    cleaned_value = [item.strip('"').replace('[[', '').replace(']]', '') if isinstance(item, str) else item for item in value]
-                elif isinstance(value, str):
-                    # Si la valeur est une chaîne de caractères, nettoyer simplement la valeur
-                    cleaned_value = value.strip('"').replace('[[', '').replace(']]', '')
-                else:
-                    # Sinon, laisser la valeur telle quelle
-                    cleaned_value = value
-                cleaned_data[key.strip('"')] = cleaned_value
-
-            films.append(cleaned_data)
+        films = [json.loads(line) for line in f]
 
     G = nx.Graph()
-    # Vérification : Afficher le résultat pour voir si les acteurs ont été ajoutés correctement
     for film in films:
-        act1 = film["cast"][0]
-        for acteur in film['cast']:
-            if acteur != act1:
-                G.add_edge(act1,acteur)
-
-    plt.clf()
-    nx.draw(G,with_labels=True)
-    plt.show()
+        cast = [actor.strip('"').replace('[[', '').replace(']]', '') for actor in film.get('cast', [])]
+        if cast:
+            G.add_edges_from((cast[0], acteur) for acteur in cast[1:])
+    
+    
     return G
 
+def collabCommuns(G, acteur1, acteur2):
+    """Retourne les collaborateurs communs entre deux acteurs."""
+    return list(set(G.neighbors(acteur1)) | set(G.neighbors(acteur2)))
 
-#Q2 
-def collabCommuns(G,acteur1, acteur2):
-    collab1 = list(G.neighbors(acteur1))
-    collab2 = list(G.neighbors(acteur2))
-    return collab1 + collab2
-#print(collabCommuns(G,'Mohanlal','Salim Kumar'))
-
-#Q3
-def collaborateurs_proches(G,u,k):
-    """Fonction renvoyant l'ensemble des acteurs à distance au plus k de l'acteur u dans le graphe G. La fonction renvoie None si u est absent du graphe.
-    
-    Parametres:
-        G: le graphe
-        u: le sommet de départ
-        k: la distance depuis u
-    """
-    if u not in G.nodes:
-        print(u,"est un illustre inconnu")
+def collaborateurs_proches(G, u, k):
+    """Retourne les acteurs à distance k de l'acteur u."""
+    if u not in G:
+        print(f"{u} est un illustre inconnu")
         return None
-    collaborateurs = set()
-    collaborateurs.add(u)
-    print(collaborateurs)
-    for i in range(k):
-        collaborateurs_directs = set()
-        for c in collaborateurs:
-            for voisin in G.adj[c]:
-                if voisin not in collaborateurs:
-                    collaborateurs_directs.add(voisin)
-        collaborateurs = collaborateurs.union(collaborateurs_directs)
-    return collaborateurs
-
-
-
-
-def est_proche(G,u,k):
-    """Fonction renvoyant la distance entre l'acteur k et l'acteur u dans le graphe G. La fonction renvoie None si u est absent du graphe.
     
-    Parametres:
-        G: le graphe
-        u: le sommet de départ
-        k: le sommet d'arrivée
-    """
-    if u not in G.nodes:
-        print(u,"est un illustre inconnu")
+    return {node for node, length in nx.single_source_shortest_path_length(G, u, cutoff=k).items()}
+
+def est_proche(G, u, k):
+    """Retourne la distance entre deux acteurs u et k."""
+    if u not in G:
+        print(f"{u} est un illustre inconnu")
         return None
-    collaborateurs = set()
-    collaborateurs.add(u)
-    print(collaborateurs)
-    i = 0
-    voisin = ""
-    while k != voisin:
-        collaborateurs_directs = set()
-        for c in collaborateurs:
-            for voisin in G.adj[c]:
-                if voisin not in collaborateurs:
-                    collaborateurs_directs.add(voisin)
-            i+=1
-        collaborateurs = collaborateurs.union(collaborateurs_directs)
-    return i
-#print(collabProch(G,'Salim Kumar', 'Mohanlal'))
-
-#Q4
-
-def centralite(G,u):
-    """Fonction renvoyant la centralité d'un acteur dans le graphe c'est à dire son degré
     
-    Parametres:
-        G: le graphe
-        u: le sommet de départ
-    """
-    if u not in G.nodes:
-        print(u,"est un illustre inconnu")
+    try:
+        return nx.shortest_path_length(G, u, k)
+    except nx.NetworkXNoPath:
+        return None
+
+def centralite(G, u):
+    """Retourne la centralité d'un acteur dans le graphe."""
+    if u not in G:
+        print(f"{u} est un illustre inconnu")
         return None
     return G.degree(u)
-#print(centralite(G,'Mohanlal'))
-
 
 def centre_hollywood(G):
-    """Fonction renvoyant le centre du graphe
-    
-    Parametres:
-        G: le graphe
-        
-    """
-    max = 0
-    act = ""
-    for acteur in G.nodes:
-        if max < G.degree(acteur):
-            max = G.degree(acteur)
-            act = acteur
-    return max,act 
-    #return nx.center(G)
-#print(centre_hollywood(G))
+    """Retourne l'acteur le plus central dans le graphe."""
+    return max(G.degree, key=lambda x: x[1])
 
-#Q5
 def eloignement_max(G):
-    """Fonction renvoyant le couple d'acteur ayant la plus grande distance qui les sépare.
-    
-    Parametres:
-        G: le graphe
-        
-    """
-    distances = dict(nx.all_pairs_shortest_path_length(G))
+    """Retourne le couple d'acteurs ayant la plus grande distance dans le graphe."""
     max_distance = 0
-    max_couple = None
-
-    for sommet1 in distances:
-        for sommet2, distance in distances[sommet1].items():
-            if distance > max_distance:
-                max_distance = distance
-                max_couple = (sommet1, sommet2)
-
+    max_couple = (None, None)
+    for u in G.nodes:
+        for v, length in nx.single_source_shortest_path_length(G, u).items():
+            if length > max_distance:
+                max_distance = length
+                max_couple = (u, v)
     return max_couple, max_distance
 
-#print(eloignement_max(G))
-
-
-def centralite(G,acteur):
-    distanceMax = collabProch(acteur,20)[-1][1]
-    return distanceMax
-#print(centralite(G,'Salim Kumar'))
-
-
-
+# Exemples d'utilisation (à commenter pour l'utilisation réelle)
+# chemin = 'dataSimplifiee.txt'
+# G = json_vers_nx(chemin)
+# print(collabCommuns(G, 'Mohanlal', 'Salim Kumar'))
+# print(collaborateurs_proches(G, 'Salim Kumar', 2))
+# print(est_proche(G, 'Salim Kumar', 'Mohanlal'))
+# print(centralite(G, 'Mohanlal'))
+# print(centre_hollywood(G))
+# print(eloignement_max(G))
