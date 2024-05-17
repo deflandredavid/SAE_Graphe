@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import json
 
 #Q1
+
 def json_vers_nx(chemin):
     films = []
     with open(chemin, 'r') as f:
@@ -38,10 +39,11 @@ def json_vers_nx(chemin):
         for acteur in film['cast']:
             if acteur != act1:
                 G.add_edge(act1,acteur)
-    return G
-#json_vers_nx('dataSimplifiee.txt')
 
-G = json_vers_nx('dataSimplifiee.txt')
+    plt.clf()
+    nx.draw(G,with_labels=True)
+    plt.show()
+    return G
 
 
 #Q2 
@@ -106,11 +108,65 @@ def est_proche(G,u,k):
 #print(collabProch(G,'Salim Kumar', 'Mohanlal'))
 
 #Q4
+
+def centralite(G,u):
+    """Fonction renvoyant la centralité d'un acteur dans le graphe c'est à dire son degré
+    
+    Parametres:
+        G: le graphe
+        u: le sommet de départ
+    """
+    if u not in G.nodes:
+        print(u,"est un illustre inconnu")
+        return None
+    return G.degree(u)
+#print(centralite(G,'Mohanlal'))
+
+
+def centre_hollywood(G):
+    """Fonction renvoyant le centre du graphe
+    
+    Parametres:
+        G: le graphe
+        
+    """
+    max = 0
+    act = ""
+    for acteur in G.nodes:
+        if max < G.degree(acteur):
+            max = G.degree(acteur)
+            act = acteur
+    return max,act 
+    #return nx.center(G)
+#print(centre_hollywood(G))
+
+#Q5
+def eloignement_max(G):
+    """Fonction renvoyant le couple d'acteur ayant la plus grande distance qui les sépare.
+    
+    Parametres:
+        G: le graphe
+        
+    """
+    distances = dict(nx.all_pairs_shortest_path_length(G))
+    max_distance = 0
+    max_couple = None
+
+    for sommet1 in distances:
+        for sommet2, distance in distances[sommet1].items():
+            if distance > max_distance:
+                max_distance = distance
+                max_couple = (sommet1, sommet2)
+
+    return max_couple, max_distance
+
+#print(eloignement_max(G))
+
+
 def centralite(G,acteur):
     distanceMax = collabProch(acteur,20)[-1][1]
     return distanceMax
 #print(centralite(G,'Salim Kumar'))
 
-#Q5
-def eloignement_max(G):
-    return ""
+
+
