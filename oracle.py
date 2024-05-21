@@ -27,7 +27,7 @@ def demander_2_acteurs(G):
 
 def demander_1_acteur(G):
     """Demande à l'utilisateur l'acteur à utiliser"""
-    rep1 = input("Quel est le premier acteur : ")
+    rep1 = input("Quel est l'acteur : ")
     if rep1 in G.nodes:
         return rep1
     print("L'acteur n'est pas dans le graphe")
