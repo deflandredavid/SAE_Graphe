@@ -53,7 +53,8 @@ def programme_principal():
         "5 : Voir la distance qui sépare deux acteurs",
         "6 : Voir tous les acteurs qui sont à une distance donnée d'un acteur donné",
         "7 : Voir la centralité d'un acteur",
-        "8 : Arrêter le programme",
+        "8 : Voir la distance qui sépare deux acteurs"
+        "9 : Arrêter le programme",
         "\n"
     ]
     G = demander_charger()
@@ -61,11 +62,11 @@ def programme_principal():
         for option in options:
             print(option)
         try:
-            rep1 = int(input("Que voulez-vous faire? (répondre avec 1, 2, 3, 4, 5, 6, 7 ou 8) : "))
+            rep1 = int(input("Que voulez-vous faire? (répondre avec 1, 2, 3, 4, 5, 6, 7, 8 ou 9) : "))
         except ValueError:
             print("Ceci n'est pas un nombre")
 
-        if rep1 == 8:
+        if rep1 == 9:
             break
 
         if rep1 == 1:
@@ -98,6 +99,9 @@ def programme_principal():
             acteur = demander_1_acteur(G)
             if acteur:
                 print(requetes.centralite(G, acteur))
+        elif rep1 == 8:
+            act1, act2 = demander_2_acteurs(G)
+            print(requetes.distance_entre_acteurs(G,act1,act2))
         else:
             print("Option non reconnue. Veuillez choisir un nombre entre 1 et 9.")
 

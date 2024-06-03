@@ -13,7 +13,7 @@ def demander_charger():
             return requetes.json_vers_nx(nom_fic)
         except Exception as e:
             messagebox.showerror("Erreur", f"Erreur : {e}\nJe ne connais pas ce fichier, nous allons utiliser un fichier par défaut.")
-    return requetes.json_vers_nx('dataSimplifiee.txt')
+    return requetes.json_vers_nx('data.txt')
 
 def demander_2_acteurs(G):
     """Demande à l'utilisateur les 2 acteurs à utiliser"""
@@ -41,6 +41,8 @@ def demander_distance():
         messagebox.showerror("Erreur", "Ceci n'est pas un nombre")
         return None
 
+
+
 def voir_graphe(G):
     nx.draw(G, with_labels=True)
     plt.show()
@@ -59,11 +61,11 @@ def voir_acteurs_eloignes(G):
     result = requetes.eloignement_max(G)
     messagebox.showinfo("Couple d'Acteurs Éloignés", result)
 
-def voir_distance_acteurs(G):
+def voir_acteurs_proche(G):
     acteur1, acteur2 = demander_2_acteurs(G)
     if acteur1 and acteur2:
         result = requetes.est_proche(G, acteur1, acteur2)
-        messagebox.showinfo("Distance entre Acteurs", result)
+        messagebox.showinfo("Acteurs proches", result)
 
 def voir_acteurs_distance(G):
     acteur = demander_1_acteur(G)
@@ -79,6 +81,14 @@ def voir_centralite_acteur(G):
         result = requetes.centralite(G, acteur)
         messagebox.showinfo("Centralité d'un Acteur", result)
 
+def voir_distance_2_acteurs(G):
+    act1,act2 = demander_2_acteurs(G)
+    if act1 and act2:
+        result = requetes.distance_entre_acteurs(G,act1,act2)
+        messagebox.showinfo("Distance séparant deux acteurs", result)
+
+
+
 def programme_principal():
     G = demander_charger()
 
@@ -90,9 +100,10 @@ def programme_principal():
         ("Voir le centre du graphe", lambda: voir_centre_graphe(G)),
         ("Voir tous les acteurs qui ont travaillé avec deux acteurs donnés", lambda: voir_acteurs_collab(G)),
         ("Voir le couple d'acteurs qui sont le plus éloignés du graphe", lambda: voir_acteurs_eloignes(G)),
-        ("Voir la distance qui sépare deux acteurs", lambda: voir_distance_acteurs(G)),
+        ("Voir si deux acteurs sont proches", lambda: voir_acteurs_proche(G)),
         ("Voir tous les acteurs qui sont à une distance donnée d'un acteur donné", lambda: voir_acteurs_distance(G)),
         ("Voir la centralité d'un acteur", lambda: voir_centralite_acteur(G)),
+        ("Voir la distance séparant deux acteurs", lambda: voir_distance_2_acteurs(G)),
         ("Arrêter le programme", root.quit)
     ]
 
