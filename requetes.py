@@ -65,11 +65,11 @@ def est_proche(G, u, k):
         print(k + " est un illustre inconnu")
         return None
     try:
-        if (distance_entre_acteurs(G,u,k) <=1):
-            return True
-        return False
+        if (distance_entre_acteurs(G,u,k) <=3):
+            return "Oui"
+        return "Non"
     except nx.NetworkXNoPath:
-        return False
+        return "Non"
 
 
 
